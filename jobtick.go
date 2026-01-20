@@ -37,6 +37,21 @@ func (jt *JobTick) CreateProcess(proc Process, delay interface{}) error {
 	return jt.Create(proc.Name, proc.Type, proc.Queue, proc.File, proc.Function, proc.Data, startTime)
 }
 
+// Execute fetches the next pending process for a queue and runs it.
+func (jt *JobTick) Execute(queue string) error {
+	// 1. Fetch and mark as assigned
+	proc, err := jt.GetNextForExecution(queue)
+	if err != nil {
+		return err
+	}
+
+	if proc == nil {
+		return nil
+	}
+
+	return jt.ExecuteProcess(proc)
+}
+
 // ExecuteProcess runs the process by executing its associated file.
 func (jt *JobTick) ExecuteProcess(proc *Process) error {
 	// 1. Ensure it's marked as assigned if it wasn't already (e.g. for forced execution)
